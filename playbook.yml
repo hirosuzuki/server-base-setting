@@ -1,0 +1,32 @@
+- hosts: all
+  become: yes
+
+  vars:
+    accounts:
+      - name: suzuki.hiroaki
+        github: hirosuzuki
+
+  tasks:
+
+  - apt: pkg={{ item }} state=latest
+    loop:
+    - git
+
+  - group:
+      name: "sudoers"
+
+  - user:
+      name: "{{ item.name }}"
+      shell: "/bin/bash"
+      groups: sudoers
+    with_items: "{{ accounts }}"
+
+  - authorized_key:
+      user: "{{ item.name }}"
+      key: "https://github.com/{{ item.github }}.keys"
+    with_items: "{{ accounts }}"
+
+  - copy:
+      src: sudoers
+      dest: /etc/sudoers.d/sudoers
+
